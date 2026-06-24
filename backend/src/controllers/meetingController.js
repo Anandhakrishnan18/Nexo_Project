@@ -1,4 +1,6 @@
 const Meeting = require("../models/Meeting");
+const User = require("../models/User");
+const { createNotification } = require("../utils/notifications");
 
 const generateMeetingCode = () => {
   const chars =
@@ -40,6 +42,23 @@ const createMeeting = async (req, res) => {
           ? "upcoming"
           : "active",
     });
+
+    // Notify other users of the newly scheduled meeting
+    if (type === "scheduled") {
+      try {
+        const otherUsers = await User.find({ _id: { $ne: req.user.id } });
+        otherUsers.forEach((u) => {
+          createNotification(
+            req,
+            u._id,
+            "New Scheduled Meeting",
+            `${req.user.username} scheduled a new meeting "${title}" for ${new Date(scheduledTime).toLocaleString()}`
+          );
+        });
+      } catch (err) {
+        console.error("Failed to send meeting scheduled notifications:", err);
+      }
+    }
 
     res.status(201).json(meeting);
   } catch (error) {

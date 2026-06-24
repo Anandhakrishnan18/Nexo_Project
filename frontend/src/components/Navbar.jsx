@@ -30,13 +30,17 @@ function Navbar() {
 
         <div className="profile-box">
 
-          <div className="avatar">
-            {initials}
+          <div className="avatar" style={{ overflow: "hidden" }}>
+            {user?.avatar ? (
+              <img src={user.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              initials
+            )}
           </div>
 
           <div className="profile-info">
             <h4>
-              Guest
+              {user?.username || "Guest"}
             </h4>
 
             <small>

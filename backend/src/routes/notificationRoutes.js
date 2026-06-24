@@ -9,6 +9,7 @@ const protect = require(
 const {
   getNotifications,
   markAsRead,
+  markAllAsRead,
 } = require(
   "../controllers/notificationController"
 );
@@ -17,6 +18,12 @@ router.get(
   "/",
   protect,
   getNotifications
+);
+
+router.put(
+  "/read-all",
+  protect,
+  markAllAsRead
 );
 
 router.put(

@@ -1,4 +1,7 @@
 const File = require("../models/File");
+const fs = require("fs");
+const Team = require("../models/Team");
+const { createNotification } = require("../utils/notifications");
 
 const uploadFile = async (
   req,
@@ -19,6 +22,21 @@ const uploadFile = async (
       fileName: req.file.originalname,
       filePath: req.file.path,
     });
+
+    // Notify other team members
+    const team = await Team.findById(teamId);
+    if (team) {
+      team.members.forEach((memberId) => {
+        if (memberId.toString() !== req.user.id) {
+          createNotification(
+            req,
+            memberId,
+            "New File Shared",
+            `${req.user.username} uploaded a new file "${req.file.originalname}" in team "${team.name}"`
+          );
+        }
+      });
+    }
 
     res.status(201).json(file);
   } catch (error) {
@@ -67,6 +85,15 @@ const deleteFile = async (
       return res.status(404).json({
         message: "File not found",
       });
+    }
+
+    // Physically delete file from disk if it exists
+    if (file.filePath && fs.existsSync(file.filePath)) {
+      try {
+        fs.unlinkSync(file.filePath);
+      } catch (err) {
+        console.error("Failed to delete physical file from disk:", err);
+      }
     }
 
     await file.deleteOne();

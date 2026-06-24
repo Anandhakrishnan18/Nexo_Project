@@ -11,6 +11,10 @@ const {
   joinTeam,
   joinPrivateTeam,
   leaveTeam,
+  updateTeamSettings,
+  removeMember,
+  updateMemberRole,
+  deleteTeam,
 } = require("../controllers/teamController");
 
 router.post("/", protect, createTeam);
@@ -18,6 +22,14 @@ router.post("/", protect, createTeam);
 router.get("/", protect, getTeams);
 
 router.get("/:id", protect, getTeamById);
+
+router.put("/:id/settings", protect, updateTeamSettings);
+
+router.delete("/:id", protect, deleteTeam);
+
+router.post("/:id/members/remove", protect, removeMember);
+
+router.put("/:id/members/role", protect, updateMemberRole);
 
 router.post("/:id/join", protect, joinTeam);
 

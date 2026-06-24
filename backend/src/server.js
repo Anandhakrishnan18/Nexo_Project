@@ -1,4 +1,5 @@
 const http = require("http");
+const path = require("path");
 const { Server } = require("socket.io");
 
 const teamChatSocket = require(
@@ -34,8 +35,6 @@ const webrtcSocket =
 
 const fileRoutes =
   require("./routes/fileRoutes");
-
-const path = require("path");
 
 const whiteboardSocket =
   require(
@@ -100,12 +99,22 @@ const io = new Server(server, {
   },
 });
 
+// Attach io to app to access in controllers
+app.set("io", io);
+
+io.on("connection", (socket) => {
+  socket.on("join-notifications", (userId) => {
+    socket.join(`user-${userId}`);
+    console.log(`User socket ${socket.id} joined notification room: user-${userId}`);
+  });
+});
+
 teamChatSocket(io);
 meetingChatSocket(io);
 webrtcSocket(io);
 whiteboardSocket(io);
 
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
   console.log(
     `Server running on port ${PORT}`
   );
