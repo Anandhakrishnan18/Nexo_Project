@@ -7,7 +7,7 @@ import WhiteboardCanvas from "../components/WhiteboardCanvas";
 import "../styles/videocall.css";
 import { 
   Mic, MicOff, Video as VideoIcon, VideoOff, MonitorUp, PhoneOff, 
-  MessageSquare, Users, Paintbrush, MonitorStop, Send
+  MessageSquare, Users, Paintbrush, MonitorStop, Send, Maximize2, Minimize2
 } from "lucide-react";
 
 const RemoteVideo = ({ stream, peerInfo, peerId }) => {
@@ -55,6 +55,10 @@ function VideoCall() {
   const [activeTab, setActiveTab] = useState("chat"); // 'chat' or 'participants'
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isToolbarVisible, setIsToolbarVisible] = useState(true);
+  const toolbarTimeoutRef = useRef(null);
 
   const startCamera = async () => {
     try {
@@ -453,10 +457,92 @@ function VideoCall() {
     navigate(`/meetings/${id}`);
   };
 
+  const toggleExpand = async () => {
+    try {
+      if (!isExpanded) {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen().catch(e => console.warn(e));
+        }
+        setIsExpanded(true);
+      } else {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          await document.exitFullscreen().catch(e => console.warn(e));
+        }
+        setIsExpanded(false);
+      }
+    } catch (err) {
+      console.warn("Fullscreen API error", err);
+      setIsExpanded(!isExpanded);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && isExpanded) {
+        setIsExpanded(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, [isExpanded]);
+
+  const isExpandedWhiteboard = isExpanded && workspaceMode === "whiteboard";
+  const isExpandedVideo = isExpanded && workspaceMode === "video";
+  const shouldFloatToolbar = isExpanded;
+
+  useEffect(() => {
+    if (isExpanded) {
+      setIsToolbarVisible(true);
+      if (toolbarTimeoutRef.current) clearTimeout(toolbarTimeoutRef.current);
+      const timeout = isExpandedWhiteboard ? 2000 : 3000;
+      toolbarTimeoutRef.current = setTimeout(() => setIsToolbarVisible(false), timeout);
+    } else {
+      setIsToolbarVisible(true);
+      if (toolbarTimeoutRef.current) clearTimeout(toolbarTimeoutRef.current);
+    }
+  }, [isExpanded, isExpandedWhiteboard]);
+
+  const handlePointerInteraction = (e) => {
+    if (!isExpanded) return;
+
+    if (isExpandedWhiteboard) {
+      let clientY = 0;
+      if (e.type.startsWith('touch')) {
+        if (e.touches && e.touches.length > 0) {
+          clientY = e.touches[0].clientY;
+        } else {
+          return;
+        }
+      } else {
+        clientY = e.clientY;
+      }
+
+      const isBottomZone = clientY >= window.innerHeight - 120;
+
+      if (isBottomZone) {
+        setIsToolbarVisible(true);
+        if (toolbarTimeoutRef.current) clearTimeout(toolbarTimeoutRef.current);
+        toolbarTimeoutRef.current = setTimeout(() => {
+          setIsToolbarVisible(false);
+        }, 2000);
+      } else {
+        setIsToolbarVisible(false);
+      }
+    } else if (isExpandedVideo) {
+      setIsToolbarVisible(true);
+      if (toolbarTimeoutRef.current) clearTimeout(toolbarTimeoutRef.current);
+      toolbarTimeoutRef.current = setTimeout(() => {
+        setIsToolbarVisible(false);
+      }, 3000);
+    }
+  };
+
   const getGridLayoutClass = () => {
     const total = Object.keys(remoteStreams).length + 1;
     if (total === 1) return "video-grid single";
     if (total === 2) return "video-grid double";
+    if (total <= 4) return "video-grid grid-4";
+    if (total <= 6) return "video-grid grid-6";
     return "video-grid";
   };
 
@@ -464,7 +550,12 @@ function VideoCall() {
 
   return (
     <Layout>
-      <div className="video-call-container">
+      <div 
+        className={`video-call-container ${isExpanded ? 'meeting-expanded meeting-expanded-mobile' : ''}`}
+        onMouseMove={isExpanded ? handlePointerInteraction : undefined}
+        onTouchMove={isExpanded ? handlePointerInteraction : undefined}
+        onTouchStart={isExpanded ? handlePointerInteraction : undefined}
+      >
         <div className="video-call-header">
           <div>
             <h1>{meeting?.title || "Workspace meeting"}</h1>
@@ -507,11 +598,13 @@ function VideoCall() {
                 })}
               </div>
             ) : (
-              <div style={{ flex: 1, padding: "20px", background: "var(--bg-darker)", overflowY: "auto" }}>
-                <h3 style={{ color: "var(--text-main)", marginBottom: "15px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ flex: 1, padding: "20px", background: "var(--bg-darker)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                <h3 style={{ color: "var(--text-main)", marginBottom: "15px", display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
                   <Paintbrush size={20} color="var(--primary)" /> Shared Collaborative Whiteboard
                 </h3>
-                <WhiteboardCanvas meetingId={id} />
+                <div style={{ flex: 1, position: "relative", borderRadius: "12px", overflow: "hidden", border: "1px solid var(--border)" }}>
+                  <WhiteboardCanvas meetingId={id} />
+                </div>
               </div>
             )}
           </div>
@@ -646,7 +739,11 @@ function VideoCall() {
         </div>
 
         {/* Floating Toolbar Controls */}
-        <div className="call-controls-bar">
+        <div 
+          className={`call-controls-bar ${shouldFloatToolbar ? 'meeting-toolbar-floating' : ''} ${shouldFloatToolbar && !isToolbarVisible ? 'toolbar-hidden' : ''}`}
+          onClick={(e) => e.stopPropagation()} 
+          onTouchStart={(e) => e.stopPropagation()}
+        >
           <button
             onClick={() => toggleWorkspaceMode(workspaceMode === "video" ? "whiteboard" : "video")}
             className={`control-btn whiteboard-toggle ${workspaceMode === "whiteboard" ? "active" : ""}`}
@@ -685,6 +782,14 @@ function VideoCall() {
             title={chatOpen ? "Hide chat panel" : "Show chat panel"}
           >
             <MessageSquare size={24} />
+          </button>
+
+          <button
+            onClick={toggleExpand}
+            className={`control-btn ${isExpanded ? "active" : ""}`}
+            title={isExpanded ? "Collapse View" : "Expand View"}
+          >
+            {isExpanded ? <Minimize2 size={24} /> : <Maximize2 size={24} />}
           </button>
 
           <button onClick={leaveCall} className="control-btn leave-btn" title="Leave Call">

@@ -52,7 +52,7 @@
 .video-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 20px;
   padding: 24px;
   overflow-y: auto;
@@ -69,6 +69,14 @@
 
 .video-grid.double {
   grid-template-columns: repeat(2, 1fr);
+}
+
+.video-grid.grid-4 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.video-grid.grid-6 {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .video-tile {
@@ -387,4 +395,64 @@
 
 .control-btn.leave-btn:hover {
   background: #dc2626;
+}
+
+/* Fullscreen Expand Mode */
+.meeting-expanded {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: var(--bg-darker);
+  margin: 0 !important;
+}
+
+.meeting-toolbar-floating {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 24px;
+  padding: 12px 24px;
+  transition: opacity 300ms ease, transform 300ms ease;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+  width: auto;
+}
+
+.toolbar-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 100%);
+}
+
+@media (max-width: 768px) {
+  .meeting-expanded-mobile .video-grid {
+    grid-template-columns: 1fr !important;
+    align-content: start;
+    padding-bottom: 120px;
+  }
+  .meeting-expanded-mobile .video-tile {
+    width: 100%;
+    aspect-ratio: auto;
+    height: 35vh;
+  }
+  .meeting-expanded-mobile .workspace-side-panel {
+    display: none !important;
+  }
+  .meeting-expanded-mobile .video-call-header {
+    display: none !important;
+  }
+}
+
+.meeting-expanded .video-call-header {
+  display: none !important;
+}
+
+.meeting-expanded .workspace-side-panel {
+  display: none !important;
 }
