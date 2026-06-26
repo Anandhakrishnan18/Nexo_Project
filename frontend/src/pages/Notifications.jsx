@@ -3,6 +3,7 @@ import "../styles/notifications.css";
 import { useEffect, useState } from "react";
 import API from "../services/api";
 import socket from "../socket";
+import { Bell, Check, CheckCircle2, Circle } from "lucide-react";
 
 function Notifications() {
   const [notifications, setNotifications] = useState([]);
@@ -64,7 +65,7 @@ function Notifications() {
         </div>
         {notifications.some((n) => !n.isRead) && (
           <button className="mark-read-btn" onClick={markAllAsRead}>
-            Mark all read
+            <CheckCircle2 size={18} /> Mark all read
           </button>
         )}
       </div>
@@ -72,9 +73,9 @@ function Notifications() {
       {notifications.length === 0 ? (
         <div className="notifications-card">
           <div className="notification-empty">
-            <div className="bell-icon">🔔</div>
+            <Bell size={64} className="bell-icon" />
             <h3>You're all caught up</h3>
-            <p>We'll notify you when actions occur across your teams.</p>
+            <p>We'll notify you when actions occur across your workspaces.</p>
           </div>
         </div>
       ) : (
@@ -86,7 +87,7 @@ function Notifications() {
             >
               <div className="notification-content">
                 <h3>
-                  {!n.isRead && <span style={{ color: "#3b82f6" }}>●</span>}
+                  {!n.isRead && <Circle size={10} fill="var(--primary)" color="var(--primary)" />}
                   {n.title}
                 </h3>
                 <p>{n.message}</p>
@@ -99,7 +100,7 @@ function Notifications() {
                     className="read-action-btn"
                     onClick={() => markOneAsRead(n._id)}
                   >
-                    ✓ Mark Read
+                    <Check size={16} /> Mark Read
                   </button>
                 </div>
               )}

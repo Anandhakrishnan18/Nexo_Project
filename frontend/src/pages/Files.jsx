@@ -3,6 +3,11 @@ import "../styles/files.css";
 import { useEffect, useState, useRef } from "react";
 import API from "../services/api";
 import socket from "../socket";
+import { 
+  File, FileText, Image as ImageIcon, Video, FileArchive, Search, 
+  UploadCloud, Download, Trash2, Eye, X, Filter, FolderOpen, Users
+} from "lucide-react";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 function Files() {
   const [contextType, setContextType] = useState("team"); // 'team' or 'meeting'
@@ -121,7 +126,6 @@ function Files() {
         }
       });
       setTimeout(() => setUploadProgress(0), 1000);
-      // Real-time socket will update the list
     } catch (err) {
       console.error("Error uploading file:", err);
       alert(err.response?.data?.message || "Failed to upload file.");
@@ -158,7 +162,6 @@ function Files() {
     if (window.confirm("Are you sure you want to delete this file? This will remove it from the server.")) {
       try {
         await API.delete(`/files/${fileId}`);
-        // Real-time socket will remove it from list
       } catch (err) {
         console.error("Error deleting file:", err);
         alert("Failed to delete file.");
@@ -188,26 +191,26 @@ function Files() {
   };
 
   const getFileIcon = (fileName) => {
-    if (!fileName) return "📄";
+    if (!fileName) return <File size={24} />;
     const ext = fileName.split(".").pop().toLowerCase();
     switch (ext) {
-      case "pdf": return "📕";
+      case "pdf": return <FileText size={24} color="#ef4444" />;
       case "doc":
-      case "docx": return "📘";
+      case "docx": return <FileText size={24} color="#3b82f6" />;
       case "xls":
-      case "xlsx": return "📊";
+      case "xlsx": return <File size={24} color="#10b981" />;
       case "ppt":
-      case "pptx": return "📙";
+      case "pptx": return <File size={24} color="#f59e0b" />;
       case "png":
       case "jpg":
       case "jpeg":
-      case "gif": return "🖼️";
+      case "gif": return <ImageIcon size={24} color="#ec4899" />;
       case "mp4":
-      case "mov": return "🎥";
+      case "mov": return <Video size={24} color="#8b5cf6" />;
       case "zip":
-      case "rar": return "📦";
-      case "txt": return "📝";
-      default: return "📄";
+      case "rar": return <FileArchive size={24} color="#64748b" />;
+      case "txt": return <FileText size={24} color="#94a3b8" />;
+      default: return <File size={24} />;
     }
   };
 
@@ -230,8 +233,6 @@ function Files() {
     return ["png", "jpg", "jpeg", "gif", "pdf", "mp4"].includes(ext);
   };
 
-  // Preview fallback using secure API fetch (needs custom component or direct object URL)
-  // For images and PDFs, fetching and setting Object URL is required if auth is mandatory
   const openPreview = async (file) => {
     try {
       const res = await API.get(`/files/download/${file._id}`, { responseType: 'blob' });
@@ -255,13 +256,14 @@ function Files() {
       <div className="files-header">
         <div>
           <h1>Files</h1>
-          <p>Share, organize, and preview assets across your teams and meetings.</p>
+          <p>Share, organize, and preview assets across your workspaces.</p>
         </div>
       </div>
 
-      <div className="team-selector-container" style={{ display: "flex", gap: "15px", alignItems: "center", marginBottom: "20px" }}>
-        <div>
-          <span style={{ fontWeight: "600", color: "#475569", marginRight: "10px" }}>Context:</span>
+      <div className="team-selector-container">
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <Filter size={18} color="var(--text-muted)" />
+          <span style={{ fontWeight: "500", color: "var(--text-muted)" }}>Context:</span>
           <select
             className="team-selector"
             value={contextType}
@@ -272,8 +274,9 @@ function Files() {
           </select>
         </div>
 
-        <div>
-          <span style={{ fontWeight: "600", color: "#475569", marginRight: "10px" }}>Select:</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <FolderOpen size={18} color="var(--text-muted)" />
+          <span style={{ fontWeight: "500", color: "var(--text-muted)" }}>Select:</span>
           <select
             className="team-selector"
             value={selectedContextId}
@@ -307,7 +310,6 @@ function Files() {
             onDragLeave={handleDrag}
             onDrop={handleDrop}
             onClick={onButtonClick}
-            style={{ position: "relative" }}
           >
             <input
               ref={fileInputRef}
@@ -316,25 +318,28 @@ function Files() {
               onChange={handleFileChange}
             />
             {uploadProgress > 0 ? (
-              <div style={{ padding: "30px 0" }}>
-                <h3 style={{ color: "#3b82f6" }}>Uploading... {uploadProgress}%</h3>
-                <div style={{ width: "100%", height: "8px", background: "#334155", borderRadius: "4px", marginTop: "15px" }}>
-                  <div style={{ width: `${uploadProgress}%`, height: "100%", background: "#3b82f6", borderRadius: "4px", transition: "width 0.2s" }} />
+              <div style={{ padding: "10px 0", width: "100%", maxWidth: "400px" }}>
+                <h3 style={{ color: "var(--primary)" }}>Uploading... {uploadProgress}%</h3>
+                <div style={{ width: "100%", height: "8px", background: "var(--bg-dark)", borderRadius: "4px", marginTop: "15px", overflow: "hidden" }}>
+                  <div style={{ width: `${uploadProgress}%`, height: "100%", background: "var(--primary)", transition: "width 0.2s ease" }} />
                 </div>
               </div>
             ) : (
               <>
-                <span style={{ fontSize: "40px" }}>📤</span>
+                <UploadCloud size={48} color="var(--primary)" />
                 <h3>Drag & Drop File Here</h3>
                 <p>or click to browse from your device</p>
-                <p style={{ fontSize: "12px", color: "#64748b", marginTop: "10px" }}>
+                <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "12px" }}>
                   Supported: PDF, DOCX, PPTX, XLSX, ZIP, PNG, JPG, MP4 (Max: 50MB)
                 </p>
               </>
             )}
           </div>
 
-          <div style={{ marginBottom: "25px", display: "flex", justifyContent: "flex-end" }}>
+          <div style={{ marginBottom: "24px", display: "flex", justifyContent: "flex-end", position: "relative" }}>
+            <div style={{ position: "absolute", right: "16px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", pointerEvents: "none" }}>
+              <Search size={18} />
+            </div>
             <input
               className="file-search"
               placeholder={`Search files in this ${contextType}...`}
@@ -345,7 +350,7 @@ function Files() {
 
           {filteredFiles.length === 0 ? (
             <div className="files-empty">
-              <span>📂</span>
+              <FolderOpen size={48} color="var(--border-light)" />
               <h3>No files found</h3>
               <p>Upload a file using the dropzone above to get started.</p>
             </div>
@@ -359,8 +364,8 @@ function Files() {
                       <div className="file-icon">{getFileIcon(displayName)}</div>
                       <div className="file-details">
                         <h3 title={displayName}>{displayName}</h3>
-                        <p>By: {file.uploadedBy?.username || "Unknown"} • {formatBytes(file.fileSize)}</p>
-                        <p>{new Date(file.createdAt).toLocaleDateString()}</p>
+                        <p>Uploaded by {file.uploadedBy?.username || "Unknown"}</p>
+                        <p>{formatBytes(file.fileSize)} • {new Date(file.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
 
@@ -370,20 +375,20 @@ function Files() {
                           className="file-btn"
                           onClick={() => openPreview(file)}
                         >
-                          👁️ Preview
+                          <Eye size={16} /> Preview
                         </button>
                       )}
                       <button
                         className="file-btn download-btn"
                         onClick={() => handleSecureDownload(file)}
                       >
-                        📥 Download
+                        <Download size={16} /> Download
                       </button>
                       <button
                         className="file-btn delete-btn"
                         onClick={() => handleDelete(file._id)}
                       >
-                        🗑️ Delete
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -394,7 +399,7 @@ function Files() {
         </div>
       ) : (
         <div className="files-empty">
-          <span>👥</span>
+          <Users size={48} color="var(--border-light)" />
           <h3>No {contextType}s available</h3>
           <p>Please create or join a {contextType} first to manage files.</p>
         </div>
@@ -410,7 +415,7 @@ function Files() {
                 className="close-modal-btn"
                 onClick={closePreview}
               >
-                ✕
+                <X size={20} />
               </button>
             </div>
             <div className="preview-modal-content">
@@ -435,4 +440,10 @@ function Files() {
   );
 }
 
-export default Files;
+export default function FilesWithErrorBoundary(props) {
+  return (
+    <ErrorBoundary>
+      <Files {...props} />
+    </ErrorBoundary>
+  );
+}

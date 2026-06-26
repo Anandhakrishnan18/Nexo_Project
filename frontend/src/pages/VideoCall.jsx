@@ -5,6 +5,10 @@ import socket from "../socket";
 import API from "../services/api";
 import WhiteboardCanvas from "../components/WhiteboardCanvas";
 import "../styles/videocall.css";
+import { 
+  Mic, MicOff, Video as VideoIcon, VideoOff, MonitorUp, PhoneOff, 
+  MessageSquare, Users, Paintbrush, MonitorStop, Send
+} from "lucide-react";
 
 const RemoteVideo = ({ stream, peerInfo, peerId }) => {
   const videoRef = useRef(null);
@@ -466,8 +470,8 @@ function VideoCall() {
             <h1>{meeting?.title || "Workspace meeting"}</h1>
             <p>Meeting Room Code: {meeting?.meetingCode || id}</p>
           </div>
-          <div style={{ color: "#94a3b8", fontSize: "14px" }}>
-            Connected Participants: {participants.length + 1}
+          <div style={{ color: "var(--text-muted)", fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <Users size={16} /> Connected Participants: {participants.length + 1}
           </div>
         </div>
 
@@ -483,8 +487,8 @@ function VideoCall() {
                     <span>You (Local)</span>
                   </div>
                   <div className="video-status-overlay">
-                    {!micEnabled && <div className="status-badge">🔇</div>}
-                    {!videoEnabled && <div className="status-badge">📷</div>}
+                    {!micEnabled && <div className="status-badge"><MicOff size={16} /></div>}
+                    {!videoEnabled && <div className="status-badge"><VideoOff size={16} /></div>}
                   </div>
                 </div>
 
@@ -503,8 +507,10 @@ function VideoCall() {
                 })}
               </div>
             ) : (
-              <div style={{ flex: 1, padding: "20px", background: "#0b0f19", overflowY: "auto" }}>
-                <h3 style={{ color: "#f8fafc", marginBottom: "15px" }}>Shared Collaborative Whiteboard</h3>
+              <div style={{ flex: 1, padding: "20px", background: "var(--bg-darker)", overflowY: "auto" }}>
+                <h3 style={{ color: "var(--text-main)", marginBottom: "15px", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Paintbrush size={20} color="var(--primary)" /> Shared Collaborative Whiteboard
+                </h3>
                 <WhiteboardCanvas meetingId={id} />
               </div>
             )}
@@ -517,13 +523,13 @@ function VideoCall() {
                 className={`panel-tab-btn ${activeTab === "chat" ? "active" : ""}`}
                 onClick={() => setActiveTab("chat")}
               >
-                💬 Chat
+                <MessageSquare size={16} /> Chat
               </button>
               <button
                 className={`panel-tab-btn ${activeTab === "participants" ? "active" : ""}`}
                 onClick={() => setActiveTab("participants")}
               >
-                👥 Participants ({participants.length + 1})
+                <Users size={16} /> Participants
               </button>
             </div>
 
@@ -531,7 +537,7 @@ function VideoCall() {
               <div className="panel-chat-container">
                 <div className="panel-chat-messages">
                   {messages.length === 0 ? (
-                    <p style={{ color: "#94a3b8", textAlign: "center", marginTop: "20px" }}>
+                    <p style={{ color: "var(--text-muted)", textAlign: "center", marginTop: "20px" }}>
                       No messages in this call.
                     </p>
                   ) : (
@@ -553,7 +559,7 @@ function VideoCall() {
                       if (e.key === "Enter") sendChatMessage();
                     }}
                   />
-                  <button onClick={sendChatMessage}>Send</button>
+                  <button onClick={sendChatMessage}><Send size={16} /></button>
                 </div>
               </div>
             ) : (
@@ -567,7 +573,7 @@ function VideoCall() {
                         width: "32px",
                         height: "32px",
                         borderRadius: "50%",
-                        background: "#3b82f6",
+                        background: "var(--primary)",
                         color: "white",
                         display: "flex",
                         alignItems: "center",
@@ -587,7 +593,7 @@ function VideoCall() {
                         initials
                       )}
                     </div>
-                    <span style={{ color: "#f8fafc", fontSize: "14px" }}>
+                    <span style={{ color: "var(--text-main)", fontSize: "14px" }}>
                       {user?.username} (You)
                     </span>
                   </div>
@@ -606,8 +612,8 @@ function VideoCall() {
                             width: "32px",
                             height: "32px",
                             borderRadius: "50%",
-                            background: "#64748b",
-                            color: "white",
+                            background: "var(--border)",
+                            color: "var(--text-main)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -626,7 +632,7 @@ function VideoCall() {
                             pInitials
                           )}
                         </div>
-                        <span style={{ color: "#f8fafc", fontSize: "14px" }}>
+                        <span style={{ color: "var(--text-main)", fontSize: "14px" }}>
                           {p.username}
                         </span>
                       </div>
@@ -646,7 +652,7 @@ function VideoCall() {
             className={`control-btn whiteboard-toggle ${workspaceMode === "whiteboard" ? "active" : ""}`}
             title={workspaceMode === "video" ? "Switch to Whiteboard Workspace" : "Switch back to Video call"}
           >
-            {workspaceMode === "video" ? "🎨" : "📹"}
+            {workspaceMode === "video" ? <Paintbrush size={24} /> : <VideoIcon size={24} />}
           </button>
 
           <button
@@ -654,7 +660,7 @@ function VideoCall() {
             className={`control-btn ${!micEnabled ? "active" : ""}`}
             title={micEnabled ? "Mute Microphone" : "Unmute Microphone"}
           >
-            {micEnabled ? "🎙️" : "🔇"}
+            {micEnabled ? <Mic size={24} /> : <MicOff size={24} />}
           </button>
 
           <button
@@ -662,7 +668,7 @@ function VideoCall() {
             className={`control-btn ${!videoEnabled ? "active" : ""}`}
             title={videoEnabled ? "Stop Camera" : "Start Camera"}
           >
-            {videoEnabled ? "📹" : "📷"}
+            {videoEnabled ? <VideoIcon size={24} /> : <VideoOff size={24} />}
           </button>
 
           <button
@@ -670,20 +676,19 @@ function VideoCall() {
             className={`control-btn screen-share ${screenSharing ? "sharing" : ""}`}
             title={screenSharing ? "Stop Screen Share" : "Share Screen"}
           >
-            🖥️
+            {screenSharing ? <MonitorStop size={24} /> : <MonitorUp size={24} />}
           </button>
 
           <button
             onClick={() => setChatOpen(!chatOpen)}
-            className="control-btn"
-            style={{ background: chatOpen ? "#3b82f6" : "#334155" }}
+            className={`control-btn chat-toggle ${chatOpen ? "active" : ""}`}
             title={chatOpen ? "Hide chat panel" : "Show chat panel"}
           >
-            💬
+            <MessageSquare size={24} />
           </button>
 
           <button onClick={leaveCall} className="control-btn leave-btn" title="Leave Call">
-            ❌
+            <PhoneOff size={28} />
           </button>
         </div>
       </div>

@@ -2,6 +2,7 @@ import Layout from "../components/Layout";
 import "../styles/settings.css";
 import { useState, useRef } from "react";
 import API from "../services/api";
+import { User, Shield, Camera, Save } from "lucide-react";
 
 function Settings() {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -99,13 +100,13 @@ function Settings() {
           className={activeTab === "profile" ? "active-tab" : ""}
           onClick={() => setActiveTab("profile")}
         >
-          Profile Details
+          <User size={18} /> Profile Details
         </button>
         <button
           className={activeTab === "security" ? "active-tab" : ""}
           onClick={() => setActiveTab("security")}
         >
-          Security & Password
+          <Shield size={18} /> Security & Password
         </button>
       </div>
 
@@ -120,10 +121,7 @@ function Settings() {
                   cursor: "pointer",
                   overflow: "hidden",
                   position: "relative",
-                  border: "2px solid #cbd5e1",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  border: "2px solid var(--border)",
                 }}
                 title="Click to change avatar"
               >
@@ -142,14 +140,15 @@ function Settings() {
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    background: "rgba(0,0,0,0.5)",
+                    background: "rgba(15, 23, 42, 0.7)",
                     color: "white",
-                    fontSize: "10px",
-                    textAlign: "center",
-                    padding: "3px 0",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    padding: "4px 0",
                   }}
                 >
-                  Edit
+                  <Camera size={14} />
                 </div>
               </div>
               <input
@@ -161,83 +160,75 @@ function Settings() {
               />
               <div>
                 <h3>Profile photo</h3>
-                <p>Click on the circle to upload a custom avatar. PNG or JPG, up to 2 MB.</p>
+                <p>Click on the circle to upload a custom avatar.<br />PNG or JPG, up to 2 MB.</p>
               </div>
             </div>
 
-            <div className="settings-form" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              <div style={{ width: "100%" }}>
+            <div className="settings-form">
+              <div>
                 <label>Full Name</label>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  style={{ width: "100%", boxSizing: "border-box" }}
                 />
               </div>
 
-              <div style={{ width: "100%" }}>
+              <div>
                 <label>Email Address</label>
                 <input
                   type="email"
                   value={email}
                   readOnly
                   disabled
-                  style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    background: "#f1f5f9",
-                    color: "#64748b",
-                    cursor: "not-allowed",
-                  }}
                 />
               </div>
             </div>
 
-            <div style={{ overflow: "hidden", marginTop: "20px" }}>
+            <div style={{ overflow: "hidden" }}>
               <button className="save-btn" onClick={handleProfileSave}>
-                Save Changes
+                <Save size={18} /> Save Changes
               </button>
             </div>
           </div>
         ) : (
           <div>
-            <h3 style={{ marginBottom: "20px" }}>Change Password</h3>
-            <div className="settings-form" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              <div style={{ width: "100%" }}>
+            <h3 style={{ marginBottom: "24px", color: "var(--text-main)", fontSize: "18px" }}>Change Password</h3>
+            <div className="settings-form">
+              <div>
                 <label>Current Password</label>
                 <input
                   type="password"
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
-                  style={{ width: "100%", boxSizing: "border-box" }}
+                  placeholder="••••••••"
                 />
               </div>
 
-              <div style={{ width: "100%" }}>
+              <div>
                 <label>New Password</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  style={{ width: "100%", boxSizing: "border-box" }}
+                  placeholder="••••••••"
                 />
               </div>
 
-              <div style={{ width: "100%" }}>
+              <div>
                 <label>Confirm New Password</label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  style={{ width: "100%", boxSizing: "border-box" }}
+                  placeholder="••••••••"
                 />
               </div>
             </div>
 
-            <div style={{ overflow: "hidden", marginTop: "20px" }}>
+            <div style={{ overflow: "hidden" }}>
               <button className="save-btn" onClick={handlePasswordSave}>
-                Change Password
+                <Save size={18} /> Update Password
               </button>
             </div>
           </div>

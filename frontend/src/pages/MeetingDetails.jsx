@@ -1,9 +1,10 @@
 import Layout from "../components/Layout";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API from "../services/api";
 import socket from "../socket";
-import { useNavigate } from "react-router-dom";
+import { Video, CalendarDays, Activity, Key, User, Users } from "lucide-react";
+import "../styles/meetings.css";
 
 function MeetingDetails() {
   const { id } = useParams();
@@ -30,73 +31,83 @@ function MeetingDetails() {
   if (!meeting) {
     return (
       <Layout>
-        <h2>Loading...</h2>
+        <div className="meeting-details-container" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "18px" }}>Loading meeting details...</p>
+        </div>
       </Layout>
     );
   }
 
   return (
     <Layout>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}
-      >
-        <button
-          className="primary-btn"
-          onClick={() => navigate(`/video-call/${id}`)}
-        >
-          📹 Join Video Call
-        </button>
-      </div>
+      <div className="meeting-details-container">
+        <div className="meeting-details-header">
+          <div className="meeting-details-info">
+            <h1>{meeting.title}</h1>
+            <p>{meeting.description || "No description provided."}</p>
+          </div>
 
-      <div
-        style={{
-          background: "white",
-          padding: "30px",
-          borderRadius: "20px",
-          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)",
-        }}
-      >
-        <h1>{meeting.title}</h1>
-        <p style={{ marginTop: "10px", color: "#64748b" }}>
-          {meeting.description}
-        </p>
+          <button
+            className="primary-btn"
+            onClick={() => navigate(`/video-call/${id}`)}
+            style={{ fontSize: "16px", padding: "14px 28px" }}
+          >
+            <Video size={20} />
+            Join Video Call
+          </button>
+        </div>
 
-        <br />
-        <h3>Type : {meeting.type}</h3>
-        <h3>Status : {meeting.status}</h3>
-        <h3>Participants : {meeting.participants?.length}</h3>
-        <h3>Meeting Code : {meeting.meetingCode}</h3>
-        <h3>Created By : {meeting.createdBy?.username}</h3>
-
-        <hr style={{ margin: "25px 0" }} />
-
-        <h2>Participants</h2>
-        <div
-          style={{
-            marginTop: "15px",
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "10px",
-          }}
-        >
-          {meeting.participants?.map((participant) => (
-            <div
-              key={participant._id}
-              style={{
-                padding: "8px 16px",
-                background: "#f1f5f9",
-                borderRadius: "20px",
-                border: "1px solid #e2e8f0",
-              }}
-            >
-              <strong>{participant.username}</strong>
+        <div className="meeting-meta-grid">
+          <div className="meta-item">
+            <span className="meta-label">Type</span>
+            <div className="meta-value" style={{ display: "flex", alignItems: "center", gap: "8px", textTransform: "capitalize" }}>
+              <CalendarDays size={18} color="var(--primary)" />
+              {meeting.type}
             </div>
-          ))}
+          </div>
+
+          <div className="meta-item">
+            <span className="meta-label">Status</span>
+            <div className="meta-value" style={{ display: "flex", alignItems: "center", gap: "8px", textTransform: "capitalize" }}>
+              <Activity size={18} color="var(--success)" />
+              {meeting.status}
+            </div>
+          </div>
+
+          <div className="meta-item">
+            <span className="meta-label">Meeting Code</span>
+            <div className="meta-value" style={{ display: "flex", alignItems: "center", gap: "8px", letterSpacing: "1px" }}>
+              <Key size={18} color="var(--warning)" />
+              {meeting.meetingCode}
+            </div>
+          </div>
+
+          <div className="meta-item">
+            <span className="meta-label">Created By</span>
+            <div className="meta-value" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <User size={18} color="var(--accent)" />
+              {meeting.createdBy?.username}
+            </div>
+          </div>
+        </div>
+
+        <div className="participants-section">
+          <h2><Users size={20} /> Participants ({meeting.participants?.length || 0})</h2>
+          
+          <div className="participants-grid">
+            {meeting.participants?.map((participant) => (
+              <div key={participant._id} className="participant-chip">
+                <div className="participant-avatar">
+                  {participant.username?.charAt(0).toUpperCase()}
+                </div>
+                {participant.username}
+              </div>
+            ))}
+
+            {(!meeting.participants || meeting.participants.length === 0) && (
+              <p style={{ color: "var(--text-muted)" }}>No participants have joined this meeting yet.</p>
+            )}
+          </div>
         </div>
       </div>
     </Layout>

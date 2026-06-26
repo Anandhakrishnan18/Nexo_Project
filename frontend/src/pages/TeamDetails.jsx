@@ -1,13 +1,17 @@
 import Layout from "../components/Layout";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../services/api";
 import socket from "../socket";
+import { 
+  Settings, Users, ShieldAlert, X, UserMinus, Shield, Send
+} from "lucide-react";
 
 function TeamDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const chatEndRef = useRef(null);
 
   const [team, setTeam] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -34,6 +38,10 @@ function TeamDetails() {
       socket.off("receive-message");
     };
   }, [id]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const fetchTeam = async () => {
     try {
@@ -62,9 +70,7 @@ function TeamDetails() {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim()) {
-      return;
-    }
+    if (!newMessage.trim()) return;
 
     socket.emit("send-message", {
       teamId: id,
@@ -82,26 +88,19 @@ function TeamDetails() {
         description: settingsDesc,
         visibility: settingsVis,
       });
-      alert("Settings updated successfully!");
       fetchTeam();
       setIsEditingSettings(false);
     } catch (err) {
-      console.error(err);
       alert(err.response?.data?.message || "Failed to update settings");
     }
   };
 
   const handleDeleteTeam = async () => {
-    if (
-      window.confirm(
-        "CRITICAL: Are you sure you want to permanently delete this team? All chat logs and files will be removed."
-      )
-    ) {
+    if (window.confirm("CRITICAL: Are you sure you want to permanently delete this team? All chat logs and files will be removed.")) {
       try {
         await API.delete(`/teams/${id}`);
         navigate("/teams");
       } catch (err) {
-        console.error(err);
         alert(err.response?.data?.message || "Failed to delete team");
       }
     }
@@ -113,22 +112,18 @@ function TeamDetails() {
         userId: targetUserId,
         role: newRole,
       });
-      alert("Role updated!");
       fetchTeam();
     } catch (err) {
-      console.error(err);
       alert(err.response?.data?.message || "Failed to update role");
     }
   };
 
   const handleKickMember = async (targetUserId) => {
-    if (window.confirm("Are you sure you want to remove this member from the team?")) {
+    if (window.confirm("Are you sure you want to remove this member?")) {
       try {
         await API.post(`/teams/${id}/members/remove`, { userId: targetUserId });
-        alert("Member removed!");
         fetchTeam();
       } catch (err) {
-        console.error(err);
         alert(err.response?.data?.message || "Failed to remove member");
       }
     }
@@ -137,12 +132,13 @@ function TeamDetails() {
   if (!team) {
     return (
       <Layout>
-        <h2>Loading...</h2>
+        <div className="team-details-container" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "18px" }}>Loading workspace...</p>
+        </div>
       </Layout>
     );
   }
 
-  // Role Checks
   const currentUserRole = team.roles?.[user._id] || (team.owner?._id === user._id ? "owner" : "member");
   const isOwner = team.owner?._id === user._id || currentUserRole === "owner";
   const isAdmin = currentUserRole === "admin";
@@ -150,335 +146,166 @@ function TeamDetails() {
 
   return (
     <Layout>
-      <div
-        style={{
-          background: "white",
-          padding: "30px",
-          borderRadius: "20px",
-          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
+      <div className="team-details-container">
+        <div className="team-details-header">
           <div>
             <h1>{team.name}</h1>
-            <p style={{ color: "#64748b", marginTop: "10px" }}>
-              {team.description}
-            </p>
+            <p>{team.description}</p>
+            <div className="team-info" style={{ border: "none", paddingTop: "12px", paddingLeft: "0" }}>
+              <span>Visibility: <strong style={{color:"var(--text-main)", textTransform:"capitalize"}}>{team.visibility}</strong></span>
+              <span>Owner: <strong style={{color:"var(--text-main)"}}>{team.owner?.username}</strong></span>
+              {team.inviteCode && (
+                <span>Code: <strong style={{color:"var(--primary)", letterSpacing:"1px"}}>{team.inviteCode}</strong></span>
+              )}
+            </div>
           </div>
 
           {hasControl && (
             <button
+              className="secondary-btn"
               onClick={() => setIsEditingSettings(!isEditingSettings)}
-              style={{
-                background: isEditingSettings ? "#64748b" : "#2563eb",
-                color: "white",
-                border: "none",
-                padding: "10px 20px",
-                borderRadius: "10px",
-                cursor: "pointer",
-                fontWeight: "600",
-                fontSize: "14px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
             >
-              ⚙️ {isEditingSettings ? "Close Settings" : "Team Settings"}
+              {isEditingSettings ? <><X size={16} /> Close Settings</> : <><Settings size={16} /> Team Settings</>}
             </button>
           )}
         </div>
 
-        {/* Editing settings form panel */}
         {isEditingSettings && (
-          <div
-            style={{
-              marginTop: "20px",
-              padding: "20px",
-              background: "#f8fafc",
-              border: "1px solid #e2e8f0",
-              borderRadius: "12px",
-            }}
-          >
-            <h3>Edit Workspace Details</h3>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "12px",
-                marginTop: "15px",
-              }}
-            >
-              <input
-                type="text"
-                placeholder="Team Name"
-                value={settingsName}
-                onChange={(e) => setSettingsName(e.target.value)}
-                style={{
-                  padding: "10px",
-                  border: "1px solid #cbd5e1",
-                  borderRadius: "8px",
-                }}
-              />
-              <input
-                type="text"
-                placeholder="Description"
-                value={settingsDesc}
-                onChange={(e) => setSettingsDesc(e.target.value)}
-                style={{
-                  padding: "10px",
-                  border: "1px solid #cbd5e1",
-                  borderRadius: "8px",
-                }}
-              />
-              <select
-                value={settingsVis}
-                onChange={(e) => setSettingsVis(e.target.value)}
-                style={{
-                  padding: "10px",
-                  border: "1px solid #cbd5e1",
-                  borderRadius: "8px",
-                }}
-              >
-                <option value="public">Public (Anyone can join)</option>
-                <option value="private">Private (Requires invite code)</option>
-              </select>
+          <div className="settings-panel">
+            <h3>Workspace Details</h3>
+            <input
+              type="text"
+              placeholder="Team Name"
+              value={settingsName}
+              onChange={(e) => setSettingsName(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Description"
+              value={settingsDesc}
+              onChange={(e) => setSettingsDesc(e.target.value)}
+            />
+            <select value={settingsVis} onChange={(e) => setSettingsVis(e.target.value)}>
+              <option value="public">Public (Anyone can join)</option>
+              <option value="private">Private (Requires invite code)</option>
+            </select>
 
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: "10px",
-                }}
-              >
-                <div style={{ display: "flex", gap: "10px" }}>
-                  <button
-                    className="primary-btn"
-                    onClick={handleUpdateSettings}
-                    style={{ padding: "8px 16px", fontSize: "13px" }}
-                  >
-                    Save Changes
-                  </button>
-                  <button
-                    onClick={() => setIsEditingSettings(false)}
-                    style={{
-                      background: "white",
-                      border: "1px solid #cbd5e1",
-                      borderRadius: "10px",
-                      padding: "8px 16px",
-                      cursor: "pointer",
-                      fontSize: "13px",
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-
-                {isOwner && (
-                  <button
-                    onClick={handleDeleteTeam}
-                    style={{
-                      background: "#ef4444",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "10px",
-                      padding: "8px 16px",
-                      cursor: "pointer",
-                      fontWeight: "600",
-                      fontSize: "13px",
-                    }}
-                  >
-                    🚨 Delete Team
-                  </button>
-                )}
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button className="primary-btn" onClick={handleUpdateSettings}>Save Changes</button>
+                <button className="secondary-btn" onClick={() => setIsEditingSettings(false)}>Cancel</button>
               </div>
+
+              {isOwner && (
+                <button
+                  className="primary-btn"
+                  onClick={handleDeleteTeam}
+                  style={{ background: "rgba(239, 68, 68, 0.1)", color: "var(--danger)", border: "1px solid rgba(239, 68, 68, 0.3)" }}
+                >
+                  <ShieldAlert size={16} /> Delete Team
+                </button>
+              )}
             </div>
           </div>
         )}
 
-        <br />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "32px", marginTop: "32px" }}>
+          
+          {/* Members Sidebar */}
+          <div>
+            <h3 style={{ color: "var(--text-main)", display: "flex", alignItems: "center", gap: "8px" }}>
+              <Users size={18} /> Members ({team.members?.length})
+            </h3>
+            <div className="members-list">
+              {team.members?.map((member) => {
+                const memberRole = team.roles?.[member._id] || (team.owner?._id === member._id ? "owner" : "member");
+                const isSelf = member._id === user._id;
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "25px", fontSize: "14px", color: "#475569" }}>
-          <div><strong>Visibility:</strong> {team.visibility}</div>
-          <div><strong>Members:</strong> {team.members?.length}</div>
-          <div><strong>Owner:</strong> {team.owner?.username}</div>
-        </div>
+                return (
+                  <div key={member._id} className="member-item">
+                    <div className="member-info">
+                      <strong>{member.username} {isSelf && "(You)"}</strong>
+                      {memberRole !== "member" && <span className="role-badge">{memberRole}</span>}
+                      <div>{member.email}</div>
+                    </div>
 
-        <hr style={{ margin: "25px 0", border: "0", borderTop: "1px solid #e2e8f0" }} />
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      {isOwner && !isSelf && memberRole !== "owner" && (
+                        <select
+                          value={memberRole}
+                          onChange={(e) => handleRoleChange(member._id, e.target.value)}
+                          style={{
+                            background: "var(--bg-dark)", border: "1px solid var(--border)",
+                            color: "var(--text-main)", borderRadius: "6px", padding: "4px 8px", fontSize: "12px"
+                          }}
+                        >
+                          <option value="member">Member</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      )}
 
-        <h2>Members</h2>
-
-        <div style={{ marginTop: "15px" }}>
-          {team.members?.map((member) => {
-            const memberRole = team.roles?.[member._id] || (team.owner?._id === member._id ? "owner" : "member");
-            const isSelf = member._id === user._id;
-
-            return (
-              <div
-                key={member._id}
-                style={{
-                  padding: "15px 0",
-                  borderBottom: "1px solid #e5e7eb",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <div>
-                  <strong>
-                    {member.username} {isSelf && "(You)"}
-                  </strong>
-                  <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
-                    {member.email} • <span style={{ textTransform: "capitalize", fontWeight: "600" }}>{memberRole}</span>
+                      {hasControl && !isSelf && memberRole !== "owner" && !(isAdmin && memberRole === "admin") && (
+                        <button
+                          onClick={() => handleKickMember(member._id)}
+                          style={{
+                            background: "rgba(239, 68, 68, 0.1)", color: "var(--danger)",
+                            border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "6px",
+                            padding: "6px", cursor: "pointer"
+                          }}
+                          title="Kick Member"
+                        >
+                          <UserMinus size={14} />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
+                );
+              })}
+            </div>
+          </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  {/* Role Assignment: Only team owner can change roles for others */}
-                  {isOwner && !isSelf && memberRole !== "owner" && (
-                    <select
-                      value={memberRole}
-                      onChange={(e) => handleRoleChange(member._id, e.target.value)}
-                      style={{
-                        padding: "6px 12px",
-                        border: "1px solid #cbd5e1",
-                        borderRadius: "8px",
-                        fontSize: "12px",
-                        outline: "none",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <option value="member">Member</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  )}
+          {/* Chat Section */}
+          <div>
+            <h3 style={{ color: "var(--text-main)" }}>Team Chat</h3>
+            <div className="chat-container">
+              <div className="chat-messages">
+                {messages.length === 0 ? (
+                  <div style={{ margin: "auto", color: "var(--text-muted)", textAlign: "center" }}>
+                    <Shield size={32} style={{ margin: "0 auto 12px", opacity: 0.5 }} />
+                    <p>No messages yet. Start the conversation!</p>
+                  </div>
+                ) : (
+                  messages.map((msg, i) => {
+                    const isSelf = msg.sender?._id === user._id;
+                    const showSender = i === 0 || messages[i-1].sender?._id !== msg.sender?._id;
 
-                  {/* Kick Button: Owner can kick anyone. Admin can kick members (not owner, not other admins). */}
-                  {hasControl && !isSelf && memberRole !== "owner" && !(isAdmin && memberRole === "admin") && (
-                    <button
-                      onClick={() => handleKickMember(member._id)}
-                      style={{
-                        background: "#fee2e2",
-                        color: "#ef4444",
-                        border: "1px solid #fca5a5",
-                        borderRadius: "8px",
-                        padding: "6px 12px",
-                        fontSize: "12px",
-                        cursor: "pointer",
-                        fontWeight: "600",
-                        transition: "all 0.15s",
-                      }}
-                      onMouseOver={(e) => (e.target.style.background = "#fca5a5")}
-                      onMouseOut={(e) => (e.target.style.background = "#fee2e2")}
-                    >
-                      Kick member
-                    </button>
-                  )}
-                </div>
+                    return (
+                      <div key={msg._id} className={`chat-message ${isSelf ? "self" : "other"}`}>
+                        {showSender && <div className="message-sender">{isSelf ? "You" : msg.sender?.username}</div>}
+                        <div className="message-bubble">{msg.content}</div>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={chatEndRef} />
               </div>
-            );
-          })}
-        </div>
 
-        {team.inviteCode && (
-          <div
-            style={{
-              marginTop: "25px",
-              padding: "15px",
-              background: "#eff6ff",
-              border: "1px solid #bfdbfe",
-              borderRadius: "12px",
-              display: "inline-block",
-            }}
-          >
-            <h4 style={{ color: "#1e3a8a", margin: 0 }}>Invite Code</h4>
-            <p
-              style={{
-                fontSize: "18px",
-                fontWeight: "700",
-                color: "#1d4ed8",
-                letterSpacing: "1px",
-                margin: "8px 0 0 0",
-              }}
-            >
-              {team.inviteCode}
-            </p>
-          </div>
-        )}
-
-        <hr style={{ margin: "35px 0", border: "0", borderTop: "1px solid #e2e8f0" }} />
-
-        <h2>Team Chat</h2>
-
-        <div
-          style={{
-            marginTop: "20px",
-            border: "1px solid #e5e7eb",
-            borderRadius: "12px",
-            padding: "20px",
-            minHeight: "300px",
-            background: "#ffffff",
-          }}
-        >
-          <div className="messages-list">
-            {messages.length === 0 ? (
-              <p>No messages yet</p>
-            ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg._id}
-                  style={{
-                    marginBottom: "15px",
-                    padding: "12px",
-                    background: "#f8fafc",
-                    borderRadius: "10px",
-                  }}
-                >
-                  <strong>{msg.sender?.username}</strong>
-                  <p style={{ marginTop: "5px" }}>{msg.content}</p>
-                </div>
-              ))
-            )}
+              <div className="chat-input-area">
+                <input
+                  type="text"
+                  className="chat-input"
+                  placeholder="Type a message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                />
+                <button className="chat-send-btn" onClick={sendMessage}>
+                  <Send size={18} style={{ marginLeft: "2px" }} />
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              marginTop: "20px",
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Type a message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              style={{
-                flex: 1,
-                padding: "12px",
-                border: "1px solid #d1d5db",
-                borderRadius: "10px",
-              }}
-            />
-            <button
-              onClick={sendMessage}
-              style={{
-                background: "#3b82f6",
-                color: "white",
-                border: "none",
-                padding: "12px 20px",
-                borderRadius: "10px",
-                cursor: "pointer",
-              }}
-            >
-              Send
-            </button>
-          </div>
         </div>
       </div>
     </Layout>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/login.css";
+import { Hexagon } from "lucide-react";
 
 function Register() {
   const navigate = useNavigate();
@@ -14,30 +15,27 @@ function Register() {
     e.preventDefault();
 
     try {
-      await axios.post(
-        "http://localhost:5000/api/auth/register",
-        {
-          username,
-          email,
-          password,
-        }
-      );
+      await axios.post("http://localhost:5000/api/auth/register", {
+        username,
+        email,
+        password,
+      });
 
-      alert("Registration Successful");
       navigate("/login");
-
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-        "Registration Failed"
-      );
+      alert(error.response?.data?.message || "Registration Failed");
     }
   };
 
   return (
     <div className="login-container">
       <div className="login-left">
-        <h2>NeXo</h2>
+        <div className="logo-header">
+          <div className="logo-icon">
+            <Hexagon size={24} />
+          </div>
+          <h2>NeXo</h2>
+        </div>
 
         <div className="hero">
           <h1>
@@ -45,73 +43,55 @@ function Register() {
             <br />
             with your team
           </h1>
-
           <p>
-            Create your NeXo account and start
-            managing meetings, teams, files,
-            and collaboration.
+            Create your NeXo account and start managing meetings, teams, files, and collaboration all in one secure platform.
           </p>
         </div>
 
-        <p className="copyright">
-          © 2026 NeXo
-        </p>
+        <div className="copyright">© 2026 NeXo Inc.</div>
       </div>
 
       <div className="login-right">
         <div className="login-card">
-  <form onSubmit={handleRegister}>
-          <h1>Create Account</h1>
+          <form onSubmit={handleRegister}>
+            <h2>Create Account</h2>
+            <p>Enter your details below to get started.</p>
 
-          <p>
-            Enter your details below.
-          </p>
+            <label>Username</label>
+            <input
+              type="text"
+              placeholder="johndoe"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
 
-          <label>Username</label>
-          <input
-            type="text"
-            placeholder="Enter username"
-            value={username}
-            onChange={(e) =>
-              setUsername(e.target.value)
-            }
-            required
-          />
+            <label>Email Address</label>
+            <input
+              type="email"
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-          <label>Email</label>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
-            required
-          />
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
 
-          <label>Password</label>
-          <input
-            type="password"
-            placeholder="********"
-            value={password}
-            onChange={(e) =>
-              setPassword(e.target.value)
-            }
-            required
-          />
+            <button type="submit">Create Account</button>
 
-          <button type="submit">
-            Create Account
-          </button>
-
-          <p className="register-link">
-            Already have an account?{" "}
-            <Link to="/login">
-              Sign In
-            </Link>
-          </p>
-        </form>
-</div>
+            <p className="register-link">
+              Already have an account?{" "}
+              <Link to="/login">Sign In</Link>
+            </p>
+          </form>
+        </div>
       </div>
     </div>
   );

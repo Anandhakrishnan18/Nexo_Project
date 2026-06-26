@@ -2,11 +2,12 @@
   display: flex;
   flex-direction: column;
   height: calc(100vh - 140px);
-  background: #0f172a;
+  background: var(--bg-darker);
   border-radius: 24px;
   overflow: hidden;
   position: relative;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+  border: 1px solid var(--border);
 }
 
 .video-call-header {
@@ -16,20 +17,20 @@
   padding: 20px 30px;
   background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border);
   z-index: 10;
 }
 
 .video-call-header h1 {
   font-size: 20px;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--text-main);
   margin: 0;
 }
 
 .video-call-header p {
   font-size: 14px;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin: 4px 0 0 0;
 }
 
@@ -57,7 +58,7 @@
   overflow-y: auto;
   align-content: center;
   justify-content: center;
-  background: #0b0f19;
+  background: var(--bg-darker);
 }
 
 .video-grid.single {
@@ -72,25 +73,25 @@
 
 .video-tile {
   position: relative;
-  background: #1e293b;
+  background: var(--bg-dark);
   border-radius: 16px;
   overflow: hidden;
   aspect-ratio: 16/10;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  border: 2px solid transparent;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  border: 2px solid var(--border);
   transition: border-color 0.3s ease;
 }
 
 .video-tile.speaking {
-  border-color: #3b82f6;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+  border-color: var(--primary);
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
 }
 
 .video-tile video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background: #020617;
+  background: #000;
 }
 
 .video-tile-info {
@@ -101,13 +102,13 @@
   backdrop-filter: blur(8px);
   padding: 6px 12px;
   border-radius: 8px;
-  color: #f8fafc;
+  color: var(--text-main);
   font-size: 13px;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .video-status-overlay {
@@ -133,8 +134,8 @@
 /* Collapsible Right Panel Styles */
 .workspace-side-panel {
   width: 350px;
-  background: #1e293b;
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-dark);
+  border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
@@ -148,31 +149,35 @@
 
 .panel-tabs {
   display: flex;
-  background: #0f172a;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-darker);
+  border-bottom: 1px solid var(--border);
 }
 
 .panel-tab-btn {
   flex: 1;
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--text-muted);
   padding: 14px;
   font-weight: 600;
   cursor: pointer;
   font-size: 13px;
   border-bottom: 2px solid transparent;
   transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .panel-tab-btn:hover {
-  color: #f8fafc;
+  color: var(--text-main);
 }
 
 .panel-tab-btn.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.05);
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background: rgba(99, 102, 241, 0.05);
 }
 
 /* Side Panel Chat Styles */
@@ -195,15 +200,16 @@
 }
 
 .panel-chat-bubble {
-  background: #334155;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
   padding: 12px;
   border-radius: 12px;
-  color: #f8fafc;
+  color: var(--text-main);
 }
 
 .panel-chat-bubble strong {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-muted);
   display: block;
   margin-bottom: 4px;
 }
@@ -222,17 +228,21 @@
 
 .panel-chat-input-bar input {
   flex: 1;
-  background: #0f172a;
-  border: 1px solid #334155;
-  color: white;
+  background: var(--bg-darker);
+  border: 1px solid var(--border);
+  color: var(--text-main);
   padding: 10px 14px;
   border-radius: 10px;
   outline: none;
   font-size: 13px;
 }
 
+.panel-chat-input-bar input:focus {
+  border-color: var(--primary);
+}
+
 .panel-chat-input-bar button {
-  background: #3b82f6;
+  background: var(--primary);
   color: white;
   border: none;
   padding: 10px 16px;
@@ -240,10 +250,13 @@
   cursor: pointer;
   font-weight: 600;
   transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .panel-chat-input-bar button:hover {
-  background: #2563eb;
+  background: var(--primary-hover);
 }
 
 /* Side Panel Participants Styles */
@@ -262,7 +275,8 @@
   justify-content: space-between;
   padding: 10px 14px;
   border-radius: 12px;
-  background: #334155;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
 }
 
 .participant-avatar-container {
@@ -272,11 +286,11 @@
 }
 
 .participant-badge {
-  background: #10b981;
+  background: var(--success);
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  box-shadow: 0 0 8px #10b981;
+  box-shadow: 0 0 8px var(--success);
 }
 
 /* Controls Floating Toolbar */
@@ -288,68 +302,87 @@
   padding: 20px;
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border);
   z-index: 10;
 }
 
 .control-btn {
-  background: #334155;
-  color: #f8fafc;
-  border: none;
-  width: 50px;
-  height: 50px;
+  background: var(--card-bg);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 20px;
   transition: all 0.2s ease;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
 .control-btn:hover {
-  background: #475569;
+  background: var(--card-hover);
   transform: translateY(-2px);
 }
 
 .control-btn.active {
-  background: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .control-btn.active:hover {
-  background: #dc2626;
+  background: rgba(239, 68, 68, 0.2);
 }
 
 .control-btn.screen-share.sharing {
-  background: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .control-btn.screen-share.sharing:hover {
-  background: #059669;
+  background: rgba(16, 185, 129, 0.2);
 }
 
 .control-btn.whiteboard-toggle {
-  background: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
 .control-btn.whiteboard-toggle:hover {
-  background: #d97706;
+  background: rgba(245, 158, 11, 0.2);
 }
 
 .control-btn.whiteboard-toggle.active {
-  background: #3b82f6;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary);
+  border-color: rgba(99, 102, 241, 0.3);
 }
 
 .control-btn.whiteboard-toggle.active:hover {
-  background: #2563eb;
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.control-btn.chat-toggle {
+  background: var(--card-bg);
+}
+
+.control-btn.chat-toggle.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
 }
 
 .control-btn.leave-btn {
-  background: #ef4444;
-  width: 60px;
-  height: 60px;
-  border-radius: 16px;
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
 }
 
 .control-btn.leave-btn:hover {
